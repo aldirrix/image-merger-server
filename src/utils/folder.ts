@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { readdir, readFile } from 'fs/promises';
 
 const createFolder = (folderName: string) => {
   try {
@@ -12,10 +13,15 @@ const createFolder = (folderName: string) => {
   }
 }
 
+
+
 export const createCacheFolders = () => {
   createFolder('./cache')
   createFolder('./cache/pokemon')
-  // TODO: implement cache for cats and overlays
   createFolder('./cache/cats')
+  // TODO: implement cache for overlays
   createFolder('./cache/overlays')
 }
+
+export const getFilesInFolder = (folderName: string) => readdir(folderName);
+export const readFileFromFolder = (filePath: string) => readFile(filePath)
