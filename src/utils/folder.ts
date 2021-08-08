@@ -19,7 +19,6 @@ export const createCacheFolders = () => {
   createFolder('./cache')
   createFolder('./cache/pokemon')
   createFolder('./cache/cats')
-  // TODO: implement cache for overlays
   createFolder('./cache/overlays')
 }
 

@@ -1,4 +1,6 @@
 import sharp from 'sharp';
+import fs from 'fs';
+
 import { ImageProps } from '../types';
 import { readFileFromPath } from './folder';
 
@@ -20,10 +22,17 @@ const getImageHeight = async (image: Buffer): Promise<number> => {
   }
 }
 
-export const overlayImages = async (backGroundImageProps: ImageProps, secondaryImageProps: ImageProps): Promise<Buffer> => {
+export const overlayImages = async (backGroundImageProps: ImageProps, secondaryImageProps: ImageProps): Promise<string> => {
   const backGroundImage = await readFileFromPath(backGroundImageProps.filePath)
   const secondaryImage = await readFileFromPath(secondaryImageProps.filePath)
   const backGroundImageHeight = await getImageHeight(backGroundImage)
+  const overlayedImagePath = `./cache/overlays/${backGroundImageProps.id}-${secondaryImageProps.id}.png`
+
+  if (fs.existsSync(overlayedImagePath)) {
+    console.debug(`Cache hit for overlayed image`);
+
+    return overlayedImagePath
+  }
 
   try {
     // Sharp cannot work with floats for values in pixels, rounding value
@@ -33,12 +42,12 @@ export const overlayImages = async (backGroundImageProps: ImageProps, secondaryI
       .resize(undefined, secondaryImageHeight)
       .toBuffer();
 
-    const mergedImage = await sharp(backGroundImage)
+    await sharp(backGroundImage)
       .composite([{ input: secondaryImageResized, gravity: 'southwest' }])
       .toFormat('png')
-      .toBuffer();
+      .toFile(overlayedImagePath);
 
-    return mergedImage;
+    return overlayedImagePath;
   } catch (error) {
     console.debug('Error: Failed to merge images');
 
