@@ -14,7 +14,7 @@ export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, r
 
     const catWithPokemonImage = await overlayImages(catImageProps, pokemonImageProps);
 
-    return res.send(catWithPokemonImage);
+    return res.sendFile(catWithPokemonImage, { root: '.' });
   } catch (error) {
     console.error(error.message);
 
