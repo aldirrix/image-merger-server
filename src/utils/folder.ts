@@ -17,8 +17,6 @@ const createFolder = (folderName: string) => {
   }
 }
 
-
-
 export const createCacheFolders = () => {
   createFolder('./cache')
   createFolder('./cache/pokemon')

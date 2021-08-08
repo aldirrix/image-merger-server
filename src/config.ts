@@ -7,5 +7,5 @@ export const config = Object.freeze({
   catImageApiUrl: CAT_IMAGE_API_URL,
   pokemonImageApiUrl: POKEMON_IMAGE_API_URL,
   isDebugMode: DEBUG_MODE === 'true',
-  disableLogs: DISABLE_LOGS,
+  disableLogs: DISABLE_LOGS === 'true',
 });
