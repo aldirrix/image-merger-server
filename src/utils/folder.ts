@@ -1,13 +1,17 @@
 import fs from 'fs';
 import { readdir, readFile } from 'fs/promises';
 
+import { logger } from './log';
+
+const log = logger('Folder utils');
+
 const createFolder = (folderName: string) => {
   try {
     if (!fs.existsSync(folderName)) {
       fs.mkdirSync(folderName)
     }
   } catch (error) {
-    console.debug("Error: Failed to create cache folders")
+    log.error("Failed to create cache folders")
 
     throw new Error(error.message)
   }

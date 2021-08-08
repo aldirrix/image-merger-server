@@ -3,20 +3,23 @@ import fs from 'fs';
 
 import { ImageProps } from '../types';
 import { readFileFromPath } from './folder';
+import { logger } from './log';
+
+const log = logger('Image utils');
 
 const getImageHeight = async (image: Buffer): Promise<number> => {
   try {
     const imageMetadata = await sharp(image).metadata();
 
     if (imageMetadata.height === undefined) {
-      console.debug('Error: Failed to get image metadata');
+      log.error('Failed to get image metadata');
 
       throw new Error('Unprocessable image');
     }
 
     return imageMetadata.height
   } catch (error) {
-    console.debug('Error: Failed to get image height');
+    log.error('Failed to get image height');
 
     throw new Error(error.message);
   }
@@ -29,7 +32,7 @@ export const overlayImages = async (backGroundImageProps: ImageProps, secondaryI
   const overlayedImagePath = `./cache/overlays/${backGroundImageProps.id}-${secondaryImageProps.id}.png`
 
   if (fs.existsSync(overlayedImagePath)) {
-    console.debug(`Cache hit for overlayed image`);
+    log.debug(`Cache hit for overlayed image`);
 
     return overlayedImagePath
   }
@@ -49,7 +52,7 @@ export const overlayImages = async (backGroundImageProps: ImageProps, secondaryI
 
     return overlayedImagePath;
   } catch (error) {
-    console.debug('Error: Failed to merge images');
+    log.error('Failed to merge images');
 
     throw new Error(error.message);
   }

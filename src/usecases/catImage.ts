@@ -3,6 +3,9 @@ import { ImageProps } from '../types';
 
 import { getFilesInFolder } from '../utils/folder';
 import { getRequest } from '../utils/http';
+import { logger } from '../utils/log';
+
+const log = logger('Cat image usecase');
 
 // Partial response from the cat API, full object available in docs
 // Ref: https://docs.thecatapi.com/api-reference/images/images-search
@@ -38,7 +41,7 @@ export const getCatImageProps = async (catImageApiUrl: string): Promise<ImagePro
       };
 
       if(isQuotaExceeded) {
-        console.debug('Info: Quota limit exceeded, using a random cat image from cache...');
+        log.info('Quota limit exceeded, using a random cat image from cache...');
 
         return cachedImageProps
       }
@@ -46,13 +49,13 @@ export const getCatImageProps = async (catImageApiUrl: string): Promise<ImagePro
 
     return getCatImagePropsUsingApi(catImageApiUrl, executionTimestamp, cachedImageProps);
   } catch (error) {
-    console.debug('Error: Failed to get cat image');
+    log.error('Failed to get cat image');
 
     throw new Error(error.message);
   }
 };
 
-const getCatImagePropsUsingApi = async (catImageApiUrl: string, timestamp: number, cachedImageProps?: ImageProps): Promise<ImageProps> => {
+export const getCatImagePropsUsingApi = async (catImageApiUrl: string, timestamp: number, cachedImageProps?: ImageProps): Promise<ImageProps> => {
   try {
     // Image url comes inside the first Array object of the JSON response
     // Ref: https://docs.thecatapi.com/
@@ -68,10 +71,12 @@ const getCatImagePropsUsingApi = async (catImageApiUrl: string, timestamp: numbe
     };
   } catch (error) {
     if (cachedImageProps !== undefined) {
-      console.debug('Error: Failed to get image from API, using existing image', error.message);
+      log.warn('Failed to get image from API, using existing image', error.message);
 
       return cachedImageProps;
     }
+
+    log.error('Failed to get image from API and no cached image availble');
 
     throw new Error(error.message)
   }

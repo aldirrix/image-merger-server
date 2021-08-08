@@ -4,6 +4,9 @@ import { getCatImageProps } from '../usecases/catImage';
 import { getPokemonImageProps } from '../usecases/pokemonImage';
 import { overlayImages } from '../utils/image';
 import { config } from '../config';
+import { logger } from '../utils/log';
+
+const log = logger('Cat with Pokemon handler');
 
 export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, res: Response) => {
   const { catImageApiUrl, pokemonImageApiUrl } = config;
@@ -16,7 +19,7 @@ export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, r
 
     return res.sendFile(catWithPokemonImage, { root: '.' });
   } catch (error) {
-    console.error(error.message);
+    log.error(error.message);
 
     return res.status(500).send('Internal server error');
   }
