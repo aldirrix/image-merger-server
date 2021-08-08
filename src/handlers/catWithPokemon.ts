@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import { getCatImage } from '../usecases/catImage';
-import { getPokemonImageFromId } from '../usecases/pokemonImage';
+import { getCatImageProps } from '../usecases/catImage';
+import { getPokemonImageProps } from '../usecases/pokemonImage';
 import { overlayImages } from '../utils/image';
 import { config } from '../config';
 
@@ -9,10 +9,10 @@ export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, r
   const { catImageApiUrl, pokemonImageApiUrl } = config;
 
   try {
-    const catImage = await getCatImage(catImageApiUrl);
-    const pokemonImage = await getPokemonImageFromId(req.params.pokemonId, pokemonImageApiUrl);
+    const catImageProps = await getCatImageProps(catImageApiUrl);
+    const pokemonImageProps = await getPokemonImageProps(req.params.pokemonId, pokemonImageApiUrl);
 
-    const catWithPokemonImage = await overlayImages(catImage, pokemonImage);
+    const catWithPokemonImage = await overlayImages(catImageProps, pokemonImageProps);
 
     return res.send(catWithPokemonImage);
   } catch (error) {

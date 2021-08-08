@@ -1,4 +1,6 @@
-import { readFile, writeFile } from 'fs/promises'
+import fs from 'fs'
+import { writeFile } from 'fs/promises'
+import { ImageProps } from '../types';
 
 import { getRequest } from '../utils/http';
 
@@ -10,30 +12,37 @@ type PokemonApiResponse = {
   }
 }
 
-export const getPokemonImageFromId = async (id: string, pokemonImageApiUrl: string): Promise<Buffer> => {
-  try {
-    const existingPokemonImage = await readFile(`./cache/pokemon/${id}`);
+export const getPokemonImageProps = async (id: string, pokemonImageApiUrl: string): Promise<ImageProps> => {
+  const filePath = `./cache/pokemon/${id}`
 
+  if (fs.existsSync(filePath)) {
     console.debug(`Cache hit for pokemon number: ${id}`);
 
-    return existingPokemonImage;
-  } catch {
+    return {
+      filePath,
+      id,
+    };
+  } else {
     console.debug(`Cache miss for pokemon number: ${id}, fetching image from API...`);
 
-    return getPokemonImageFromApi(id, pokemonImageApiUrl);
+    return getPokemonImagePropsUsingApi(id, pokemonImageApiUrl);
   }
 }
 
-const getPokemonImageFromApi = async (id: string, pokemonImageApiUrl: string) => {
+const getPokemonImagePropsUsingApi = async (id: string, pokemonImageApiUrl: string): Promise<ImageProps> => {
   try {
     const pokemonData = await getRequest(`${pokemonImageApiUrl}/${id}`) as PokemonApiResponse;
     const pokemonImage = await getRequest(pokemonData.sprites.front_default) as Buffer;
+    const filePath = `./cache/pokemon/${id}`;
 
-    await writeFile(`./cache/pokemon/${id}`, pokemonImage);
+    await writeFile(filePath, pokemonImage);
 
-    return pokemonImage;
+    return {
+      filePath,
+      id,
+    };
   } catch (error) {
-    console.debug('Error: Failed to get Pokemon image');
+    console.debug('Error: Failed to get Pokemon image from API');
 
     throw new Error(error.message);
   }

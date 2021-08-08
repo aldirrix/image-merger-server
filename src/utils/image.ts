@@ -1,6 +1,8 @@
 import sharp from 'sharp';
+import { ImageProps } from '../types';
+import { readFileFromPath } from './folder';
 
-const getImageHeight = async (image: Buffer) => {
+const getImageHeight = async (image: Buffer): Promise<number> => {
   try {
     const imageMetadata = await sharp(image).metadata();
 
@@ -12,17 +14,19 @@ const getImageHeight = async (image: Buffer) => {
 
     return imageMetadata.height
   } catch (error) {
-    console.debug('Error: Failed to merge images');
+    console.debug('Error: Failed to get image height');
 
     throw new Error(error.message);
   }
 }
 
-export const overlayImages = async (backGroundImage: Buffer, secondaryImage: Buffer) => {
+export const overlayImages = async (backGroundImageProps: ImageProps, secondaryImageProps: ImageProps): Promise<Buffer> => {
+  const backGroundImage = await readFileFromPath(backGroundImageProps.filePath)
+  const secondaryImage = await readFileFromPath(secondaryImageProps.filePath)
   const backGroundImageHeight = await getImageHeight(backGroundImage)
 
   try {
-    // Sharp cannot work with floats for height in pixels, rounding value
+    // Sharp cannot work with floats for values in pixels, rounding value
     const secondaryImageHeight = Math.round(backGroundImageHeight / 5);
 
     const secondaryImageResized = await sharp(secondaryImage)

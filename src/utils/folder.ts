@@ -24,4 +24,4 @@ export const createCacheFolders = () => {
 }
 
 export const getFilesInFolder = (folderName: string) => readdir(folderName);
-export const readFileFromFolder = (filePath: string) => readFile(filePath)
+export const readFileFromPath = (filePath: string) => readFile(filePath)
