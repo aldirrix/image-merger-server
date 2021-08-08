@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 
 import { ImageProps } from '../types';
-import { readFileFromPath } from './folder';
+import { readFileFromPath } from './filesystem';
 import { logger } from './log';
 
 const log = logger('Image utils');
@@ -25,11 +25,11 @@ const getImageHeight = async (image: Buffer): Promise<number> => {
   }
 }
 
-export const overlayImages = async (backGroundImageProps: ImageProps, secondaryImageProps: ImageProps): Promise<string> => {
+export const overlayImages = async (backGroundImageProps: ImageProps, secondaryImageProps: ImageProps, cacheFolder: string): Promise<string> => {
   const backGroundImage = await readFileFromPath(backGroundImageProps.filePath)
   const secondaryImage = await readFileFromPath(secondaryImageProps.filePath)
   const backGroundImageHeight = await getImageHeight(backGroundImage)
-  const overlayedImagePath = `./cache/overlays/${backGroundImageProps.id}-${secondaryImageProps.id}.png`
+  const overlayedImagePath = `${cacheFolder}/${backGroundImageProps.id}-${secondaryImageProps.id}.png`
 
   if (fs.existsSync(overlayedImagePath)) {
     log.debug(`Cache hit for overlayed image`);

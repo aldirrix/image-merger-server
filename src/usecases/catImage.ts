@@ -1,9 +1,10 @@
 import { writeFile } from 'fs/promises'
-import { ImageProps } from '../types';
+import { ImageProps, ImageUsecaseProps, QuotaProps } from '../types';
 
-import { getFilesInFolder } from '../utils/folder';
+import { getFilesInFolder } from '../utils/filesystem';
 import { getRequest } from '../utils/http';
 import { logger } from '../utils/log';
+import { isQuotaExceeded } from '../utils/quota';
 
 const log = logger('Cat image usecase');
 
@@ -14,54 +15,37 @@ type CatApiResponse = {
   id: string,
 }[]
 
-const ONE_MINUTE_MS = 60000;
-
-export const getCatImageProps = async (catImageApiUrl: string): Promise<ImageProps> => {
+export const getCatImageProps = async (usecaseProps: ImageUsecaseProps, quotaProps: QuotaProps): Promise<ImageProps> => {
   let cachedImageProps: ImageProps | undefined;
+  const filenames = await getFilesInFolder(usecaseProps.cacheFolder);
 
-  try {
-    const executionTimestamp = Date.now();
-    const filenames = await getFilesInFolder('./cache/cats');
+  if (filenames.length) {
+    const shouldUseCache = await isQuotaExceeded(quotaProps, filenames)
+    const randomCatIndex = Math.floor(Math.random() * filenames.length);
+    const randomCatFilename = filenames[randomCatIndex];
+    const randomCatId = randomCatFilename.substring(randomCatFilename.indexOf("-") + 1);
+    cachedImageProps = {
+      filePath: `${usecaseProps.cacheFolder}/${filenames[randomCatIndex]}`,
+      id: randomCatId,
+    };
 
-    // Files are saved in the format TIMESTAMP-ID so slicing the last (-N) will
-    // always result in the most recent files, the 1st element being the oldest
-    const mostRecentFilenames = filenames.slice(-10);
+    if(shouldUseCache) {
+      log.info('Quota limit exceeded, using a random cat image from cache...');
 
-    if (mostRecentFilenames[0] !== undefined) {
-      // TODO: Extract quota logic to be reusable and dynamic
-      const oldestFileCreationTimestamp = Number(mostRecentFilenames[0].split('-')[0]);
-      const isOldestFileWithinInterval = oldestFileCreationTimestamp > (executionTimestamp - ONE_MINUTE_MS);
-      const isQuotaExceeded = mostRecentFilenames.length >= 10 && isOldestFileWithinInterval;
-      const randomCatIndex = Math.floor(Math.random() * filenames.length);
-      const randomCatFilename = filenames[randomCatIndex];
-      const randomCatId = randomCatFilename.substring(randomCatFilename.indexOf("-") + 1);
-      cachedImageProps = {
-        filePath: `./cache/cats/${filenames[randomCatIndex]}`,
-        id: randomCatId,
-      };
-
-      if(isQuotaExceeded) {
-        log.info('Quota limit exceeded, using a random cat image from cache...');
-
-        return cachedImageProps
-      }
+      return cachedImageProps
     }
-
-    return getCatImagePropsUsingApi(catImageApiUrl, executionTimestamp, cachedImageProps);
-  } catch (error) {
-    log.error('Failed to get cat image');
-
-    throw new Error(error.message);
   }
+
+  return getCatImagePropsUsingApi(usecaseProps, quotaProps.executionTimestamp, cachedImageProps);
 };
 
-export const getCatImagePropsUsingApi = async (catImageApiUrl: string, timestamp: number, cachedImageProps?: ImageProps): Promise<ImageProps> => {
+export const getCatImagePropsUsingApi = async (usecaseProps: ImageUsecaseProps, timestamp: number, cachedImageProps?: ImageProps): Promise<ImageProps> => {
   try {
     // Image url comes inside the first Array object of the JSON response
     // Ref: https://docs.thecatapi.com/
-    const [catData] = await getRequest(catImageApiUrl) as CatApiResponse;
+    const [catData] = await getRequest(usecaseProps.apiUrl) as CatApiResponse;
     const catImage = await getRequest(catData.url) as Buffer;
-    const filePath = `./cache/cats/${timestamp}-${catData.id}`
+    const filePath = `${usecaseProps.cacheFolder}/${timestamp}-${catData.id}`
 
     await writeFile(filePath, catImage);
 

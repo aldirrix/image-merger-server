@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { writeFile } from 'fs/promises'
 
-import { ImageProps } from '../types';
+import { ImageProps, ImageUsecaseProps } from '../types';
 import { getRequest } from '../utils/http';
 import { logger } from '../utils/log';
 
@@ -15,8 +15,11 @@ type PokemonApiResponse = {
   }
 }
 
-export const getPokemonImageProps = async (id: string, pokemonImageApiUrl: string): Promise<ImageProps> => {
-  const filePath = `./cache/pokemon/${id}`
+type PokemonUsecaseProps = ImageUsecaseProps & { id: string }
+
+export const getPokemonImageProps = async (usecaseProps: PokemonUsecaseProps): Promise<ImageProps> => {
+  const { id, cacheFolder } = usecaseProps
+  const filePath = `${cacheFolder}/${id}`
 
   if (fs.existsSync(filePath)) {
     log.debug(`Cache hit for pokemon number: ${id}`);
@@ -28,15 +31,17 @@ export const getPokemonImageProps = async (id: string, pokemonImageApiUrl: strin
   } else {
     log.debug(`Cache miss for pokemon number: ${id}, fetching image from API...`);
 
-    return getPokemonImagePropsUsingApi(id, pokemonImageApiUrl);
+    return getPokemonImagePropsUsingApi(usecaseProps);
   }
 }
 
-export const getPokemonImagePropsUsingApi = async (id: string, pokemonImageApiUrl: string): Promise<ImageProps> => {
+export const getPokemonImagePropsUsingApi = async (usecaseProps: PokemonUsecaseProps): Promise<ImageProps> => {
+  const { apiUrl, id, cacheFolder } = usecaseProps
+
   try {
-    const pokemonData = await getRequest(`${pokemonImageApiUrl}/${id}`) as PokemonApiResponse;
+    const pokemonData = await getRequest(`${apiUrl}/${id}`) as PokemonApiResponse;
     const pokemonImage = await getRequest(pokemonData.sprites.front_default) as Buffer;
-    const filePath = `./cache/pokemon/${id}`;
+    const filePath = `${cacheFolder}/${id}`;
 
     await writeFile(filePath, pokemonImage);
 

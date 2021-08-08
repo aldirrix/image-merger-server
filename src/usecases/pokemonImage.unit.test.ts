@@ -3,12 +3,13 @@ import fs from 'fs'
 
 import * as pokemonImage from './pokemonImage';
 import * as httpUtils from '../utils/http';
-import { createCacheFolders } from '../utils/folder';
+import { createCacheFolders } from '../utils/filesystem';
 
 const CACHED_POKEMON_ID = '9999';
 const NOT_CACHED_POKEMON_ID = '7777';
 const NEW_CACHED_POKEMON_ID = '55555';
-const CACHE_PATH = './cache/pokemon';
+const BASE_CACHE_PATH = './cache';
+const CACHE_PATH = `${BASE_CACHE_PATH}/pokemon`;
 const POKEMON_API_URL = 'https://pokeapi.co/api/v2/pokemon';
 const IMAGE_PROPS = {
   id: NOT_CACHED_POKEMON_ID,
@@ -16,12 +17,16 @@ const IMAGE_PROPS = {
 };
 const POKEMON_API_RESPONSE = {
   sprites: {
-    front_default: 'https://pokeapi.co/api/v2/pokemon',
+    front_default: 'https://pokeapi.co/api/v2/pokemon/',
   },
 };
+const POKEMON_USECASE_PROPS = {
+  apiUrl: POKEMON_API_URL,
+  cacheFolder: CACHE_PATH,
+}
 
 beforeAll(async () => {
-  createCacheFolders();
+  createCacheFolders([BASE_CACHE_PATH, CACHE_PATH]);
   await writeFile(`${CACHE_PATH}/${CACHED_POKEMON_ID}`, 'EMPTY_FILE');
 });
 
@@ -38,22 +43,35 @@ describe('Pokemon image usecase', () => {
     const { getPokemonImageProps } = pokemonImage;
 
     it('uses cache when using existing image and skips external API call', async () => {
+      const usecaseProps = {
+        ...POKEMON_USECASE_PROPS,
+        id: CACHED_POKEMON_ID,
+      }
       const imagePropsUsingApiSpy = jest.spyOn(pokemonImage, 'getPokemonImagePropsUsingApi');
-      await getPokemonImageProps(CACHED_POKEMON_ID, POKEMON_API_URL);
+      await getPokemonImageProps(usecaseProps);
 
       expect(imagePropsUsingApiSpy).not.toHaveBeenCalled();
     });
 
     it('tries to get pokemon image properties using external API', async () => {
+      const usecaseProps = {
+        ...POKEMON_USECASE_PROPS,
+        id: NOT_CACHED_POKEMON_ID,
+      }
       const imagePropsUsingApiSpy = jest.spyOn(pokemonImage, 'getPokemonImagePropsUsingApi').mockResolvedValueOnce(IMAGE_PROPS);
 
-      await getPokemonImageProps(NOT_CACHED_POKEMON_ID, POKEMON_API_URL);
+      await getPokemonImageProps(usecaseProps);
 
-      expect(imagePropsUsingApiSpy).toHaveBeenCalledWith(NOT_CACHED_POKEMON_ID, POKEMON_API_URL);
+      expect(imagePropsUsingApiSpy).toHaveBeenCalledWith(usecaseProps);
     });
   });
 
   describe('When trying to get pokemon image properties using external API', () => {
+    const usecaseProps = {
+      ...POKEMON_USECASE_PROPS,
+      id: NEW_CACHED_POKEMON_ID,
+    }
+
     it('writes new file to the cache after fetching it using pokemon API', async () => {
       const { getPokemonImagePropsUsingApi } = pokemonImage;
 
@@ -61,7 +79,7 @@ describe('Pokemon image usecase', () => {
           .mockResolvedValueOnce(POKEMON_API_RESPONSE)
           .mockResolvedValueOnce(Buffer.from('EMPTY_FILE'));
 
-      await getPokemonImagePropsUsingApi(NEW_CACHED_POKEMON_ID, POKEMON_API_URL);
+      await getPokemonImagePropsUsingApi(usecaseProps);
 
       expect(fs.existsSync(`${CACHE_PATH}/${NEW_CACHED_POKEMON_ID}`)).toBeTruthy();
     });
@@ -73,7 +91,7 @@ describe('Pokemon image usecase', () => {
           .mockResolvedValueOnce(POKEMON_API_RESPONSE)
           .mockRejectedValueOnce({message: 'Service Unavailable'});
 
-      await expect(getPokemonImagePropsUsingApi(NEW_CACHED_POKEMON_ID, POKEMON_API_URL)).rejects.toThrow('Service Unavailable');
+      await expect(getPokemonImagePropsUsingApi(usecaseProps)).rejects.toThrow('Service Unavailable');
     });
   });
 });

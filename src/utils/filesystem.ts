@@ -17,12 +17,8 @@ const createFolder = (folderName: string) => {
   }
 }
 
-export const createCacheFolders = () => {
-  createFolder('./cache')
-  createFolder('./cache/pokemon')
-  createFolder('./cache/cats')
-  createFolder('./cache/overlays')
-}
-
+export const createCacheFolders = (folderNames: string[]) => {
+  folderNames.forEach((folderName) => createFolder(folderName))
+};
 export const getFilesInFolder = (folderName: string) => readdir(folderName);
 export const readFileFromPath = (filePath: string) => readFile(filePath)
