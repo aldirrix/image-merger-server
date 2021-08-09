@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { readdir, readFile } from 'fs/promises';
+import { readdir } from 'fs/promises';
 
 import { logger } from './log';
 
@@ -21,4 +21,3 @@ export const createCacheFolders = (folderNames: string[]) => {
   folderNames.forEach((folderName) => createFolder(folderName))
 };
 export const getFilesInFolder = (folderName: string) => readdir(folderName);
-export const readFileFromPath = (filePath: string) => readFile(filePath)

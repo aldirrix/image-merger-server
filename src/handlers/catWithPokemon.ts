@@ -5,6 +5,7 @@ import { getPokemonImageProps } from '../usecases/pokemonImage';
 import { overlayImages } from '../utils/image';
 import { config } from '../config';
 import { logger } from '../utils/log';
+import { getNumericValue } from '../utils/values';
 
 const log = logger('Cat with Pokemon handler');
 const {
@@ -13,10 +14,13 @@ const {
   catImageCacheFolder,
   catImageTimeReference,
   catImageMaxRequests,
-  overlayImageCacheFolder
+  overlayImageCacheFolder,
+  pokemonImageCacheFolder,
 } = config;
 
 export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, res: Response) => {
+  const { maxWidth, maxHeight } = req.query
+
   const catImageQuotaProps = {
     executionTimestamp: Date.now(),
     timeReferenceMs: catImageTimeReference,
@@ -25,8 +29,13 @@ export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, r
   const catImageUsecaseProps = { apiUrl: catImageApiUrl, cacheFolder: catImageCacheFolder }
   const pokemonImageUsecaseProps = {
     apiUrl: pokemonImageApiUrl,
-    cacheFolder: catImageCacheFolder,
+    cacheFolder: pokemonImageCacheFolder,
     id: req.params.pokemonId
+  };
+  const overlayImageProps = {
+    cacheFolder: overlayImageCacheFolder,
+    maxImageWidth: getNumericValue(maxWidth),
+    maxImageHeight: getNumericValue(maxHeight),
   }
 
   try {
@@ -37,7 +46,7 @@ export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, r
 
     const [catImageProps, pokemonImageProps] = await Promise.all(imagePromises)
 
-    const catWithPokemonImage = await overlayImages(catImageProps, pokemonImageProps, overlayImageCacheFolder);
+    const catWithPokemonImage = await overlayImages(catImageProps, pokemonImageProps, overlayImageProps);
 
     return res.sendFile(catWithPokemonImage, { root: '.' });
   } catch (error) {
