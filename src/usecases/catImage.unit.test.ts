@@ -32,6 +32,7 @@ const CAT_USECASE_PROPS = {
 }
 
 beforeAll(async () => {
+  await rm(CACHE_PATH, { recursive: true, force: true })
   createCacheFolders([BASE_CACHE_PATH, CACHE_PATH])
 });
 

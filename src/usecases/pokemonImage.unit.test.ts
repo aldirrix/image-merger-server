@@ -26,6 +26,7 @@ const POKEMON_USECASE_PROPS = {
 }
 
 beforeAll(async () => {
+  await rm(CACHE_PATH, { recursive: true, force: true })
   createCacheFolders([BASE_CACHE_PATH, CACHE_PATH]);
   await writeFile(`${CACHE_PATH}/${CACHED_POKEMON_ID}`, 'EMPTY_FILE');
 });
