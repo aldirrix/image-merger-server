@@ -28,7 +28,6 @@ const POKEMON_USECASE_PROPS = {
 beforeAll(async () => {
   await rm(CACHE_PATH, { recursive: true, force: true })
   createCacheFolders([BASE_CACHE_PATH, CACHE_PATH]);
-  await writeFile(`${CACHE_PATH}/${CACHED_POKEMON_ID}`, 'EMPTY_FILE');
 });
 
 afterEach(() => {
@@ -44,6 +43,8 @@ describe('Pokemon image usecase', () => {
     const { getPokemonImageProps } = pokemonImage;
 
     it('uses cache when using existing image and skips external API call', async () => {
+      await writeFile(`${CACHE_PATH}/${CACHED_POKEMON_ID}`, 'EMPTY_FILE');
+
       const usecaseProps = {
         ...POKEMON_USECASE_PROPS,
         id: CACHED_POKEMON_ID,

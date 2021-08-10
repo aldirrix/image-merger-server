@@ -5,13 +5,13 @@ import { logger } from './log';
 
 const log = logger('Folder utils');
 
-const createFolder = (folderName: string) => {
+export const createFolder = (folderName: string) => {
   try {
     if (!fs.existsSync(folderName)) {
       fs.mkdirSync(folderName)
     }
   } catch (error) {
-    log.error("Failed to create cache folders")
+    log.error(`Failed to create folder ${folderName}`)
 
     throw new Error(error.message)
   }
@@ -20,4 +20,5 @@ const createFolder = (folderName: string) => {
 export const createCacheFolders = (folderNames: string[]) => {
   folderNames.forEach((folderName) => createFolder(folderName))
 };
+
 export const getFilesInFolder = (folderName: string) => readdir(folderName);

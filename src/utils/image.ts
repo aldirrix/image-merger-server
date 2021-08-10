@@ -23,9 +23,9 @@ type ImageDimensions = {
   height: number,
 }
 
-const getImageMetadata = (imagePath: string): Promise<sharp.Metadata> => sharp(imagePath).metadata();
+export const getImageMetadata = (imagePath: string): Promise<sharp.Metadata> => sharp(imagePath).metadata();
 
-const getImageDimensions = async (imagePath: string): Promise<ImageDimensions> => {
+export const getImageDimensions = async (imagePath: string): Promise<ImageDimensions> => {
   try {
     const imageMetadata = await getImageMetadata(imagePath);
 
@@ -44,7 +44,7 @@ const getImageDimensions = async (imagePath: string): Promise<ImageDimensions> =
   }
 }
 
-const getImageHeight = async (imagePath: string): Promise<number> => {
+export const getImageHeight = async (imagePath: string): Promise<number> => {
   try {
     const imageMetadata = await getImageMetadata(imagePath);
 
@@ -100,8 +100,8 @@ export const adjustImageDimensions = async (adjustImageDimensionsProps: AdjustIm
     const imageDimensions = await getImageDimensions(filePath);
 
     // Get a ratio for the width and height of the max dimension agains the
-    // current image dimensions, if ratio > 1 use 1 to keep original size
-    // this will guarantee that max size will not be exceeded ever
+    // current image dimensions, if ratio > 1 use max ratio 1 to keep original
+    // size, this will guarantee that max size will not be exceeded ever
     const widthRatio = maxImageWidth ?  maxImageWidth / imageDimensions.width : 1;
     const heightRatio = maxImageHeight ?  maxImageHeight / imageDimensions.height : 1;
     const maxRatio = Math.min(widthRatio, heightRatio);
