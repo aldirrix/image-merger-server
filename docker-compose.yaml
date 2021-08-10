@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  image-merger-server:
+    container_name: image-merger-server
+    restart: always
+    build: .
+    ports:
+      - 8080:8080

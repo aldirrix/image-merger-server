@@ -4,7 +4,7 @@
   "description": "A REST server that merges images from two different API sources when requested",
   "main": "./src/server.js",
   "scripts": {
-    "start": "yarn build && node ./dist/server.js",
+    "start": "node ./dist/server.js",
     "build": "rm -rf ./dist && tsc",
     "serve": "DEBUG_MODE=true nodemon ./src/server.ts",
     "test:unit": "DISABLE_LOGS=true jest '.*.unit.test.ts' --collect-coverage"
