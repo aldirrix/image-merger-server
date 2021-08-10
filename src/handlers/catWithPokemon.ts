@@ -6,6 +6,7 @@ import { overlayImages } from '../utils/image';
 import { config } from '../config';
 import { logger } from '../utils/log';
 import { getNumericValue } from '../utils/values';
+import { handleError } from '../utils/error';
 
 const log = logger('Cat with Pokemon handler');
 const {
@@ -50,8 +51,10 @@ export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, r
 
     return res.sendFile(catWithPokemonImage, { root: '.' });
   } catch (error) {
+    const { code, message } = handleError(error)
+
     log.error(error.message);
 
-    return res.status(500).send('Internal server error');
+    return res.status(code).send(message);
   }
 };

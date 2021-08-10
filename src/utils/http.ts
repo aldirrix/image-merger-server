@@ -4,6 +4,10 @@ export const getRequest = (url: string) => new Promise((resolve, reject) => {
   https.get(url, (response) => {
     const chunks: Uint8Array[] = [];
 
+    if (response.statusCode === 404) {
+      reject(new Error('404'))
+    }
+
     response.on('data', (chunk) => {
       chunks.push(chunk);
     });
@@ -18,6 +22,8 @@ export const getRequest = (url: string) => new Promise((resolve, reject) => {
         resolve(JSON.parse(body.toString()));
       } else if (contentType.includes('image')) {
         resolve(Buffer.concat(chunks));
+      } else {
+        resolve(body.toString());
       }
     });
   }).on('error', (error) => {
