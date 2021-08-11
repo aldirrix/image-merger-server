@@ -19,42 +19,42 @@ const {
   pokemonImageCacheFolder,
 } = config;
 
-export const catWithPokemonHandler = async (req: Request<{pokemonId: string}>, res: Response) => {
-  const { maxWidth, maxHeight } = req.query
+export const catWithPokemonHandler = async (req: Request<{ pokemonId: string }>, res: Response): Promise<void> => {
+  const { maxWidth, maxHeight } = req.query;
 
   const catImageQuotaProps = {
     executionTimestamp: Date.now(),
     timeReferenceMs: catImageTimeReference,
     maxRequests: catImageMaxRequests,
-  }
-  const catImageUsecaseProps = { apiUrl: catImageApiUrl, cacheFolder: catImageCacheFolder }
+  };
+  const catImageUsecaseProps = { apiUrl: catImageApiUrl, cacheFolder: catImageCacheFolder };
   const pokemonImageUsecaseProps = {
     apiUrl: pokemonImageApiUrl,
     cacheFolder: pokemonImageCacheFolder,
-    id: req.params.pokemonId
+    id: req.params.pokemonId,
   };
   const overlayImageProps = {
     cacheFolder: overlayImageCacheFolder,
     maxImageWidth: getNumericValue(maxWidth),
     maxImageHeight: getNumericValue(maxHeight),
-  }
+  };
 
   try {
     const imagePromises = [
       getCatImageProps(catImageUsecaseProps, catImageQuotaProps),
-      getPokemonImageProps(pokemonImageUsecaseProps)
+      getPokemonImageProps(pokemonImageUsecaseProps),
     ];
 
-    const [catImageProps, pokemonImageProps] = await Promise.all(imagePromises)
+    const [catImageProps, pokemonImageProps] = await Promise.all(imagePromises);
 
     const catWithPokemonImage = await overlayImages(catImageProps, pokemonImageProps, overlayImageProps);
 
-    return res.sendFile(catWithPokemonImage, { root: '.' });
+    res.sendFile(catWithPokemonImage, { root: '.' });
   } catch (error) {
-    const { code, message } = handleError(error)
+    const { code, message } = handleError(error);
 
     log.error(error.message);
 
-    return res.status(code).send(message);
+    res.status(code).send(message);
   }
 };

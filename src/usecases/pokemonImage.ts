@@ -1,5 +1,5 @@
-import fs from 'fs'
-import { writeFile } from 'fs/promises'
+import fs from 'fs';
+import { writeFile } from 'fs/promises';
 
 import { ImageProps, ImageUsecaseProps } from '../types';
 import { getRequest } from '../utils/http';
@@ -11,15 +11,15 @@ const log = logger('Pokemon image usecase');
 // Ref: https://pokeapi.co/
 type PokemonApiResponse = {
   sprites: {
-    front_default: string
-  }
-}
+    front_default: string;
+  };
+};
 
-type PokemonUsecaseProps = ImageUsecaseProps & { id: string }
+type PokemonUsecaseProps = ImageUsecaseProps & { id: string };
 
 export const getPokemonImageProps = async (usecaseProps: PokemonUsecaseProps): Promise<ImageProps> => {
-  const { id, cacheFolder } = usecaseProps
-  const filePath = `${cacheFolder}/${id}`
+  const { id, cacheFolder } = usecaseProps;
+  const filePath = `${cacheFolder}/${id}`;
 
   if (fs.existsSync(filePath)) {
     log.debug(`Cache hit for pokemon number: ${id}`);
@@ -33,14 +33,14 @@ export const getPokemonImageProps = async (usecaseProps: PokemonUsecaseProps): P
 
     return getPokemonImagePropsUsingApi(usecaseProps);
   }
-}
+};
 
 export const getPokemonImagePropsUsingApi = async (usecaseProps: PokemonUsecaseProps): Promise<ImageProps> => {
-  const { apiUrl, id, cacheFolder } = usecaseProps
+  const { apiUrl, id, cacheFolder } = usecaseProps;
 
   try {
-    const pokemonData = await getRequest(`${apiUrl}/${id}`) as PokemonApiResponse;
-    const pokemonImage = await getRequest(pokemonData.sprites.front_default) as Buffer;
+    const pokemonData = (await getRequest(`${apiUrl}/${id}`)) as PokemonApiResponse;
+    const pokemonImage = (await getRequest(pokemonData.sprites.front_default)) as Buffer;
     const filePath = `${cacheFolder}/${id}`;
 
     await writeFile(filePath, pokemonImage);

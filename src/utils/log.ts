@@ -1,30 +1,30 @@
-import { config } from "../config"
+import { config } from '../config';
 
-const { disableLogs, isDebugMode } = config
+const { disableLogs, isDebugMode } = config;
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug'
+type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 type CustomLogger = {
-  error: (message: string, ...args: any) => void;
-  warn: (message: string, ...args: any) => void;
-  info: (message: string, ...args: any) => void;
-  debug: (message: string, ...args: any) => void;
-}
+  error: (message: string, ...args: unknown[]) => void;
+  warn: (message: string, ...args: unknown[]) => void;
+  info: (message: string, ...args: unknown[]) => void;
+  debug: (message: string, ...args: unknown[]) => void;
+};
 
-const execute = (level: LogLevel, namespace: string, message: string, args: any): void => {
+const execute = (level: LogLevel, namespace: string, message: string, args: unknown[]): void => {
   if (!disableLogs) {
     if (level === 'debug' && isDebugMode) {
-      console.log(`${level}: ${namespace}, ${message}`, ...args)
+      console.log(`${level}: ${namespace}, ${message}`, ...args);
     } else if (level !== 'debug') {
-      console.log(`${level}: ${namespace}, ${message}`, ...args)
+      console.log(`${level}: ${namespace}, ${message}`, ...args);
     }
   }
-}
+};
 
 export const logger = (namespace: string): CustomLogger => {
   return {
-    error: (message: string, ...args: any) => execute('error', namespace, message, args),
-    warn: (message: string, ...args: any) => execute('warn', namespace, message, args),
-    info: (message: string, ...args: any) => execute('info', namespace, message, args),
-    debug: (message: string, ...args: any) => execute('debug', namespace, message, args),
-  }
-}
+    error: (message: string, ...args: unknown[]) => execute('error', namespace, message, args),
+    warn: (message: string, ...args: unknown[]) => execute('warn', namespace, message, args),
+    info: (message: string, ...args: unknown[]) => execute('info', namespace, message, args),
+    debug: (message: string, ...args: unknown[]) => execute('debug', namespace, message, args),
+  };
+};

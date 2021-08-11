@@ -1,5 +1,5 @@
-import { writeFile, rm } from 'fs/promises'
-import fs from 'fs'
+import { writeFile, rm } from 'fs/promises';
+import fs from 'fs';
 
 import * as pokemonImage from './pokemonImage';
 import * as httpUtils from '../utils/http';
@@ -23,10 +23,10 @@ const POKEMON_API_RESPONSE = {
 const POKEMON_USECASE_PROPS = {
   apiUrl: POKEMON_API_URL,
   cacheFolder: CACHE_PATH,
-}
+};
 
 beforeAll(async () => {
-  await rm(CACHE_PATH, { recursive: true, force: true })
+  await rm(CACHE_PATH, { recursive: true, force: true });
   createCacheFolders([BASE_CACHE_PATH, CACHE_PATH]);
 });
 
@@ -48,7 +48,7 @@ describe('Pokemon image usecase', () => {
       const usecaseProps = {
         ...POKEMON_USECASE_PROPS,
         id: CACHED_POKEMON_ID,
-      }
+      };
       const imagePropsUsingApiSpy = jest.spyOn(pokemonImage, 'getPokemonImagePropsUsingApi');
       await getPokemonImageProps(usecaseProps);
 
@@ -59,8 +59,10 @@ describe('Pokemon image usecase', () => {
       const usecaseProps = {
         ...POKEMON_USECASE_PROPS,
         id: NOT_CACHED_POKEMON_ID,
-      }
-      const imagePropsUsingApiSpy = jest.spyOn(pokemonImage, 'getPokemonImagePropsUsingApi').mockResolvedValueOnce(IMAGE_PROPS);
+      };
+      const imagePropsUsingApiSpy = jest
+        .spyOn(pokemonImage, 'getPokemonImagePropsUsingApi')
+        .mockResolvedValueOnce(IMAGE_PROPS);
 
       await getPokemonImageProps(usecaseProps);
 
@@ -72,14 +74,15 @@ describe('Pokemon image usecase', () => {
     const usecaseProps = {
       ...POKEMON_USECASE_PROPS,
       id: NEW_CACHED_POKEMON_ID,
-    }
+    };
 
     it('writes new file to the cache after fetching it using pokemon API', async () => {
       const { getPokemonImagePropsUsingApi } = pokemonImage;
 
-      jest.spyOn(httpUtils, 'getRequest')
-          .mockResolvedValueOnce(POKEMON_API_RESPONSE)
-          .mockResolvedValueOnce(Buffer.from('EMPTY_FILE'));
+      jest
+        .spyOn(httpUtils, 'getRequest')
+        .mockResolvedValueOnce(POKEMON_API_RESPONSE)
+        .mockResolvedValueOnce(Buffer.from('EMPTY_FILE'));
 
       await getPokemonImagePropsUsingApi(usecaseProps);
 
@@ -89,9 +92,10 @@ describe('Pokemon image usecase', () => {
     it('handles async requests failures gracefully', async () => {
       const { getPokemonImagePropsUsingApi } = pokemonImage;
 
-      jest.spyOn(httpUtils, 'getRequest')
-          .mockResolvedValueOnce(POKEMON_API_RESPONSE)
-          .mockRejectedValueOnce({message: 'Service Unavailable'});
+      jest
+        .spyOn(httpUtils, 'getRequest')
+        .mockResolvedValueOnce(POKEMON_API_RESPONSE)
+        .mockRejectedValueOnce({ message: 'Service Unavailable' });
 
       await expect(getPokemonImagePropsUsingApi(usecaseProps)).rejects.toThrow('Service Unavailable');
     });

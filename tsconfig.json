@@ -9,6 +9,6 @@
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": true
   }
 }

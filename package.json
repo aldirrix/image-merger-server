@@ -7,7 +7,9 @@
     "start": "node ./dist/server.js",
     "build": "rm -rf ./dist && tsc",
     "serve": "DEBUG_MODE=true nodemon ./src/server.ts",
-    "test:unit": "DISABLE_LOGS=true jest '.*.unit.test.ts' --collect-coverage"
+    "test:unit": "DISABLE_LOGS=true jest '.*.unit.test.ts' --collect-coverage",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write ."
   },
   "author": "",
   "license": "MIT",
@@ -16,8 +18,16 @@
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.13",
     "@types/sharp": "^0.28.5",
+    "@typescript-eslint/eslint-plugin": "^4.29.1",
+    "@typescript-eslint/parser": "^4.29.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.24.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
     "jest": "^27.0.6",
     "nodemon": "^2.0.12",
+    "prettier": "2.3.2",
     "ts-jest": "^27.0.4",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"

@@ -5,9 +5,9 @@ REST server that merges images from two different API sources when requested.
 ## Getting Started
 
 ### Prerequisites:
-* Docker & docker-compose `(able to run compose yaml version: '3.8')`
-* Latest version of node + yarn `(only for local development)`
 
+- Docker & docker-compose `(able to run compose yaml version: '3.8')`
+- Latest version of node + yarn `(only for local development)`
 
 ### Cloning the repository
 
@@ -46,7 +46,6 @@ Base url: `http://localhost:8080/api`
   </tr>
 </table>
 
-
 ### Examples:
 
 Return a random cat image with `pikachu` overlayed
@@ -73,3 +72,14 @@ $ yarn serve
 While in local development mode, debug logs are enabled in the terminal.
 
 Nodemon is installed as a dev dependency to make local development faster without the need to rebuild when a change is introduced into the codebase.
+
+### Code formatting and style guidelines
+
+Eslint and prettier can be used for general code guidelines and hints on potential bugs when introducing new code.
+
+To run a check on eslint rules or format the codebase run:
+
+```bash
+yarn lint
+yarn format
+```

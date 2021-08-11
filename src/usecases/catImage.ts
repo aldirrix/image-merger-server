@@ -1,4 +1,4 @@
-import { writeFile } from 'fs/promises'
+import { writeFile } from 'fs/promises';
 import { ImageProps, ImageUsecaseProps, QuotaProps } from '../types';
 
 import { getFilesInFolder } from '../utils/filesystem';
@@ -11,41 +11,48 @@ const log = logger('Cat image usecase');
 // Partial response from the cat API, full object available in docs
 // Ref: https://docs.thecatapi.com/api-reference/images/images-search
 type CatApiResponse = {
-  url: string,
-  id: string,
-}[]
+  url: string;
+  id: string;
+}[];
 
-export const getCatImageProps = async (usecaseProps: ImageUsecaseProps, quotaProps: QuotaProps): Promise<ImageProps> => {
+export const getCatImageProps = async (
+  usecaseProps: ImageUsecaseProps,
+  quotaProps: QuotaProps
+): Promise<ImageProps> => {
   let cachedImageProps: ImageProps | undefined;
   const filenames = await getFilesInFolder(usecaseProps.cacheFolder);
 
   if (filenames.length) {
-    const shouldUseCache = await isQuotaExceeded(quotaProps, filenames)
+    const shouldUseCache = isQuotaExceeded(quotaProps, filenames);
     const randomCatIndex = Math.floor(Math.random() * filenames.length);
     const randomCatFilename = filenames[randomCatIndex];
-    const randomCatId = randomCatFilename.substring(randomCatFilename.indexOf("-") + 1);
+    const randomCatId = randomCatFilename.substring(randomCatFilename.indexOf('-') + 1);
     cachedImageProps = {
       filePath: `${usecaseProps.cacheFolder}/${filenames[randomCatIndex]}`,
       id: randomCatId,
     };
 
-    if(shouldUseCache) {
+    if (shouldUseCache) {
       log.info('Quota limit exceeded, using a random cat image from cache...');
 
-      return cachedImageProps
+      return cachedImageProps;
     }
   }
 
   return getCatImagePropsUsingApi(usecaseProps, quotaProps.executionTimestamp, cachedImageProps);
 };
 
-export const getCatImagePropsUsingApi = async (usecaseProps: ImageUsecaseProps, timestamp: number, cachedImageProps?: ImageProps): Promise<ImageProps> => {
+export const getCatImagePropsUsingApi = async (
+  usecaseProps: ImageUsecaseProps,
+  timestamp: number,
+  cachedImageProps?: ImageProps
+): Promise<ImageProps> => {
   try {
     // Image url comes inside the first Array object of the JSON response
     // Ref: https://docs.thecatapi.com/
-    const [catData] = await getRequest(usecaseProps.apiUrl) as CatApiResponse;
-    const catImage = await getRequest(catData.url) as Buffer;
-    const filePath = `${usecaseProps.cacheFolder}/${timestamp}-${catData.id}`
+    const [catData] = (await getRequest(usecaseProps.apiUrl)) as CatApiResponse;
+    const catImage = (await getRequest(catData.url)) as Buffer;
+    const filePath = `${usecaseProps.cacheFolder}/${timestamp}-${catData.id}`;
 
     await writeFile(filePath, catImage);
 
@@ -62,6 +69,6 @@ export const getCatImagePropsUsingApi = async (usecaseProps: ImageUsecaseProps, 
 
     log.error('Failed to get image from API and no cached image availble');
 
-    throw new Error(error.message)
+    throw new Error(error.message);
   }
 };

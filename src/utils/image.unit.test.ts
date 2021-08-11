@@ -1,4 +1,4 @@
-import { rm, writeFile } from 'fs/promises'
+import { rm, writeFile } from 'fs/promises';
 import { createCacheFolders } from './filesystem';
 
 import * as imageHelper from './image';
@@ -19,67 +19,67 @@ jest.mock('sharp', () => () => ({
 }));
 
 beforeAll(async () => {
-  await rm(CACHE_PATH, { recursive: true, force: true })
-  createCacheFolders([BASE_CACHE_PATH, CACHE_PATH])
+  await rm(CACHE_PATH, { recursive: true, force: true });
+  createCacheFolders([BASE_CACHE_PATH, CACHE_PATH]);
 });
 
 afterEach(async () => {
-  await rm(CACHE_PATH, { recursive: true, force: true })
-  createCacheFolders([BASE_CACHE_PATH, CACHE_PATH])
-  jest.restoreAllMocks()
+  await rm(CACHE_PATH, { recursive: true, force: true });
+  createCacheFolders([BASE_CACHE_PATH, CACHE_PATH]);
+  jest.restoreAllMocks();
 });
 
 afterAll(async () => {
-  await rm(CACHE_PATH, { recursive: true, force: true })
+  await rm(CACHE_PATH, { recursive: true, force: true });
 });
 
 describe('Image helper', () => {
   describe('When trying to get image dimensions', () => {
     it('returns object with height and width of image', async () => {
       jest.spyOn(imageHelper, 'getImageMetadata').mockResolvedValueOnce(IMAGE_METADATA);
-      const imageDimensions = await imageHelper.getImageDimensions('image.png')
+      const imageDimensions = await imageHelper.getImageDimensions('image.png');
 
-      expect(imageDimensions).toMatchObject({ width: 100, height: 200 })
+      expect(imageDimensions).toMatchObject({ width: 100, height: 200 });
     });
 
     it('handles unprocessable image when no width or height is found in metadata', async () => {
       jest.spyOn(imageHelper, 'getImageMetadata').mockResolvedValueOnce(INCOMPLETE_IMAGE_METADATA);
 
-      await expect(imageHelper.getImageDimensions('image.png')).rejects.toThrow('Unprocessable image')
+      await expect(imageHelper.getImageDimensions('image.png')).rejects.toThrow('Unprocessable image');
     });
 
     it('handles metadata get promise failure', async () => {
-      jest.spyOn(imageHelper, 'getImageMetadata').mockRejectedValueOnce({ message: 'Metadata get failed'});
+      jest.spyOn(imageHelper, 'getImageMetadata').mockRejectedValueOnce({ message: 'Metadata get failed' });
 
-      await expect(imageHelper.getImageDimensions('image.png')).rejects.toThrow('Metadata get failed')
+      await expect(imageHelper.getImageDimensions('image.png')).rejects.toThrow('Metadata get failed');
     });
   });
 
   describe('When trying to get image height', () => {
     it('returns object with height in pixels of image', async () => {
       jest.spyOn(imageHelper, 'getImageMetadata').mockResolvedValueOnce(IMAGE_METADATA);
-      const imageHeight = await imageHelper.getImageHeight('image.png')
+      const imageHeight = await imageHelper.getImageHeight('image.png');
 
-      expect(imageHeight).toBe(200)
+      expect(imageHeight).toBe(200);
     });
 
     it('handles unprocessable image when no height is found in metadata', async () => {
       jest.spyOn(imageHelper, 'getImageMetadata').mockResolvedValueOnce(INCOMPLETE_IMAGE_METADATA);
 
-      await expect(imageHelper.getImageHeight('image.png')).rejects.toThrow('Unprocessable image')
+      await expect(imageHelper.getImageHeight('image.png')).rejects.toThrow('Unprocessable image');
     });
 
     it('handles metadata get promise failure', async () => {
-      jest.spyOn(imageHelper, 'getImageMetadata').mockRejectedValueOnce({ message: 'Metadata get failed'});
+      jest.spyOn(imageHelper, 'getImageMetadata').mockRejectedValueOnce({ message: 'Metadata get failed' });
 
-      await expect(imageHelper.getImageHeight('image.png')).rejects.toThrow('Metadata get failed')
+      await expect(imageHelper.getImageHeight('image.png')).rejects.toThrow('Metadata get failed');
     });
   });
 
   describe('When trying to get overlay two images', () => {
     describe('And image is found in cache', () => {
-        it('returns file path of overlayed image when found in cache, skips any image processing execution', async () => {
-        const overlayedImagePath = `${CACHE_PATH}/${IMAGE_PROPS.id}-${IMAGE_PROPS.id}.png`
+      it('returns file path of overlayed image when found in cache, skips any image processing execution', async () => {
+        const overlayedImagePath = `${CACHE_PATH}/${IMAGE_PROPS.id}-${IMAGE_PROPS.id}.png`;
         const getImageMetadataSpy = jest.spyOn(imageHelper, 'getImageMetadata');
 
         await writeFile(overlayedImagePath, 'EMPTY_FILE');
@@ -114,55 +114,55 @@ describe('Image helper', () => {
       it('skips any image processing execution', async () => {
         const getImageMetadataSpy = jest.spyOn(imageHelper, 'getImageMetadata');
 
-        await imageHelper.adjustImageDimensions({filePath: 'image.png'})
+        await imageHelper.adjustImageDimensions({ filePath: 'image.png' });
 
-        expect(getImageMetadataSpy).not.toHaveBeenCalled()
+        expect(getImageMetadataSpy).not.toHaveBeenCalled();
       });
     });
 
     describe('and adjust parameters are sent', () => {
       it('skips adjust of image when given file is smaller than max thresholds, returns original image path', async () => {
-        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 100, height: 100});
+        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 100, height: 100 });
 
         const adjustImageResult = await imageHelper.adjustImageDimensions(ADJUST_IMAGE_PROPS);
 
-        expect(adjustImageResult).toBe(ADJUST_IMAGE_PROPS.filePath)
+        expect(adjustImageResult).toBe(ADJUST_IMAGE_PROPS.filePath);
       });
 
       it('adjust image dimensions when original image is bigger than max thresholds, returns adjusted image path', async () => {
-        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200});
+        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200 });
 
         const adjustImageResult = await imageHelper.adjustImageDimensions(ADJUST_IMAGE_PROPS);
 
-        expect(adjustImageResult).toBe('./cache/overlays/image-400x480.png')
+        expect(adjustImageResult).toBe('./cache/overlays/image-400x480.png');
       });
 
       it('returns adjusted image from cache when it was previously generated', async () => {
         await writeFile(`${CACHE_PATH}/image-400x480.png`, 'EMPTY_FILE');
 
-        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200});
+        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200 });
 
         const adjustImageResult = await imageHelper.adjustImageDimensions(ADJUST_IMAGE_PROPS);
 
-        expect(adjustImageResult).toBe('./cache/overlays/image-400x480.png')
+        expect(adjustImageResult).toBe('./cache/overlays/image-400x480.png');
       });
 
       it('returns adjusted image when only height threshold is given', async () => {
-        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200});
+        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200 });
 
         const adjustImageProps = { filePath: `${CACHE_PATH}/image.png`, maxImageHeight: 500 };
         const adjustImageResult = await imageHelper.adjustImageDimensions(adjustImageProps);
 
-        expect(adjustImageResult).toBe('./cache/overlays/image-416x500.png')
+        expect(adjustImageResult).toBe('./cache/overlays/image-416x500.png');
       });
 
       it('returns adjusted image when only width threshold is given', async () => {
-        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200});
+        jest.spyOn(imageHelper, 'getImageDimensions').mockResolvedValueOnce({ width: 1000, height: 1200 });
 
         const adjustImageProps = { filePath: `${CACHE_PATH}/image.png`, maxImageWidth: 500 };
         const adjustImageResult = await imageHelper.adjustImageDimensions(adjustImageProps);
 
-        expect(adjustImageResult).toBe('./cache/overlays/image-500x600.png')
+        expect(adjustImageResult).toBe('./cache/overlays/image-500x600.png');
       });
     });
   });
